@@ -42,7 +42,9 @@ bool read_cmd(char *dest) {
  */
 void do_cleanup(map m) {
   if (m != NULL) {
-    // TODO
+    for (const char *key = map_first(m); key != NULL; key = map_next(m, key)) {
+        free(map_get(m, key));
+    }
     map_destroy(m);
   }
 }
@@ -160,10 +162,10 @@ void run_cmd(char *line) {
     const char *key = map_first(m);
     if (key != NULL) {
       const char *value = map_get(m, key);
-      printf("%s:%s", key, value);
+      printf("%s: %s", key, value);
       for (key = map_next(m, key); key != NULL; key = map_next(m, key)) {
         value = map_get(m, key);
-        printf(", %s:%s", key, value);
+        printf(", %s: %s", key, value);
       }
     }
     printf("}\n");
