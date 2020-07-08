@@ -127,7 +127,7 @@ void run_cmd(char *line) {
     printf("    contains <key>     Check if map contains <key>\n");
     printf("    set <key> <value>  Set <value> for <key>\n");
     printf("    get <key>          Get the value for <key>\n");
-    printf("    remove <i>         Remove the value for <key>\n");
+    printf("    remove/rm <key>    Remove the value for <key>\n");
   }
 
   // Command: `exit`, `quit`. Closes the shell.
@@ -142,7 +142,6 @@ void run_cmd(char *line) {
     if (!parse(line, cmd)) return;
     do_cleanup(m);
     m = map_create();
-    printf("    m = {}\n");
   }
 
   // Command: `size`. Gets the current size of the map.
@@ -158,17 +157,10 @@ void run_cmd(char *line) {
     if (!parse(line, cmd)) return;
     if (!ensure_exists(m)) return;
 
-    printf("    m = {");
-    const char *key = map_first(m);
-    if (key != NULL) {
+    for (const char *key = map_first(m); key != NULL; key = map_next(m, key)) {
       const char *value = map_get(m, key);
-      printf("%s: %s", key, value);
-      for (key = map_next(m, key); key != NULL; key = map_next(m, key)) {
-        value = map_get(m, key);
-        printf(", %s: %s", key, value);
-      }
+      printf("    %s: %s\n", key, value);
     }
-    printf("}\n");
   }
 
   // Command: `contains %[^ ]`. Check if map contains a key.
@@ -193,7 +185,7 @@ void run_cmd(char *line) {
     if (!ensure_exists(m)) return;
 
     map_set(m, key, value);
-    printf("    m[%s] = %s\n", key, value);
+    printf("    %s: %s\n", key, value);
     free(key);
   }
 
@@ -208,13 +200,13 @@ void run_cmd(char *line) {
       printf("    error; key not found\n");
     } else {
       char *value = map_get(m, key);
-      printf("    m[%s] = %s\n", key, value);
+      printf("    %s: %s\n", key, value);
     }
     free(key);
   }
 
   // Command: `remove %[^ ]`. Remove the entry with a given key.
-  else if (strcmp(cmd, "remove") == 0) {
+  else if (strcmp(cmd, "remove") == 0 || strcmp(cmd, "rm") == 0) {
     char *key;
     if (!parse_s(line, cmd, &key)) return;
     if (!ensure_exists(m)) return;
@@ -224,7 +216,7 @@ void run_cmd(char *line) {
       printf("    error; key not found\n");
     } else {
       char *value = map_remove(m, key);
-      printf("    # m[%s] = %s\n", key, value);
+      printf("    %s: <deleted>\n", key);
       free(value);
     }
     free(key);
